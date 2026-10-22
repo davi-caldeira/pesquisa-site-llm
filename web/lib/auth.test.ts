@@ -34,6 +34,14 @@ test('bloqueia por 15 minutos após 5 falhas, mesmo com a senha correta', async 
   assert.equal(usuario.email, 'gestor@loja.com');
 });
 
+test('tentativas erradas em paralelo também bloqueiam a conta', async () => {
+  const { db } = await cenario();
+  const agora = Date.UTC(2026, 9, 15, 12);
+  const tentativas = Array.from({ length: 20 }, () => entrar(db, 'gestor@loja.com', 'errada', agora).catch(e => e));
+  await Promise.all(tentativas);
+  await assert.rejects(entrar(db, 'gestor@loja.com', 'senha-temporaria', agora + 1000), { status: 401, message: MENSAGEM_LOGIN });
+});
+
 test('sessão expira em 14 dias e some no logout', async () => {
   const { db } = await cenario();
   const agora = Date.UTC(2026, 9, 15);

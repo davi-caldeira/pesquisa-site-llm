@@ -51,15 +51,15 @@ export async function entrar(db: DatabaseSync, emailInformado: unknown, senha: u
     await verificarSenha(senha, await (hashFicticio ??= hashSenha('senha-ficticia-para-equalizar-tempo')));
     throw negar();
   }
+  // Conta a tentativa antes do scrypt, num único UPDATE (síncrono): pedidos em paralelo não leem o mesmo contador.
+  // Conta bloqueada não é reservada (changes = 0). Um acerto zera o contador logo abaixo.
+  const reserva = db.prepare(`UPDATE usuarios
+      SET falhas = CASE WHEN falhas + 1 >= ? THEN 0 ELSE falhas + 1 END,
+          bloqueado_ate = CASE WHEN falhas + 1 >= ? THEN ? ELSE bloqueado_ate END
+    WHERE id = ? AND bloqueado_ate <= ?`).run(MAX_FALHAS, MAX_FALHAS, agora + BLOQUEIO_MS, linha.id, agora);
+  // A senha é sempre verificada, para conta bloqueada e livre levarem o mesmo tempo.
   const correta = await verificarSenha(senha, linha.senha_hash);
-  if (Number(linha.bloqueado_ate) > agora) throw negar();
-  if (!correta) {
-    const falhas = Number(linha.falhas) + 1;
-    const bloquear = falhas >= MAX_FALHAS;
-    db.prepare('UPDATE usuarios SET falhas = ?, bloqueado_ate = ? WHERE id = ?').run(bloquear ? 0 : falhas, bloquear ? agora + BLOQUEIO_MS : 0, linha.id);
-    throw negar();
-  }
-  if (empresaBloqueada(linha)) throw negar();
+  if (Number(reserva.changes) === 0 || !correta || empresaBloqueada(linha)) throw negar();
   db.prepare('UPDATE usuarios SET falhas = 0, bloqueado_ate = 0, ultimo_acesso = ? WHERE id = ?').run(new Date(agora).toISOString(), linha.id);
   return { token: criarSessao(db, linha.id, agora), usuario: paraUsuario(linha) };
 }
