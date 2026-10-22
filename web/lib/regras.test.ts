@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { exemploAtendente, ID } from './apoio-testes.ts';
-import { novaCompetencia, type Estrutura } from './estrutura.ts';
+import { novaCompetencia, validarEstrutura, type Estrutura } from './estrutura.ts';
 import { aceitarSugestoes, ignorarSugestao, sugerir } from './regras.ts';
 
 function semCompetencias(): Estrutura {
@@ -61,4 +61,15 @@ test('aceitar inclui perda de centralidade e ignora chave desconhecida', () => {
   assert.deepEqual(nova.perdem_centralidade.map(p => [p.tarefa_id, p.origem]), [[ID(1), 'regra']]);
   assert.deepEqual(recusadas, []);
   assert.deepEqual(sugerir(nova).perdem_centralidade, []);
+});
+
+test('textos longos de tarefa e ferramenta continuam dentro dos limites de validação', () => {
+  const e = semCompetencias();
+  const longa = 'Tarefa longa '.repeat(30).slice(0, 300);
+  const ferramenta = 'F'.repeat(200);
+  e.tarefas = e.tarefas.map(t => ({ ...t, tarefa: `${t.tarefa} ${longa}`.slice(0, 300), ferramenta: t.ferramenta ? ferramenta : '' }));
+  const chaves = [...sugerir(e).competencias, ...sugerir(e).perdem_centralidade].map(s => s.chave);
+  let aceita = aceitarSugestoes(e, chaves).estrutura;
+  for (const chave of chaves) aceita = ignorarSugestao(aceita, chave);
+  assert.deepEqual(validarEstrutura(aceita), aceita);
 });
