@@ -1,6 +1,5 @@
 import { db } from '@/lib/db';
-import { estruturaVazia } from '@/lib/estrutura';
-import { criarFuncao } from '@/lib/funcoes';
+import { criarFuncaoAPartirDe } from '@/lib/nova-funcao';
 import { errorResponse, lerJson, sameOrigin } from '@/lib/http';
 import { exigirGestor } from '@/lib/sessao-web';
 
@@ -11,7 +10,7 @@ export async function POST(request: Request) {
     sameOrigin(request);
     const gestor = await exigirGestor();
     const corpo = await lerJson(request, 2000);
-    const id = criarFuncao(db(), gestor.empresaId, { nome: corpo.nome, estrutura: estruturaVazia(), origem: 'branco' });
+    const id = criarFuncaoAPartirDe(db(), gestor.empresaId, { nome: corpo.nome, modeloId: corpo.modeloId, copiarDe: corpo.copiarDe });
     return Response.json({ id }, { status: 201 });
   } catch (e) {
     return errorResponse(e);

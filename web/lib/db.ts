@@ -37,6 +37,9 @@ CREATE TABLE IF NOT EXISTS execucoes (
   empresa_id TEXT NOT NULL REFERENCES empresas(id), funcao_id TEXT REFERENCES funcoes(id),
   ocupante_id TEXT REFERENCES ocupantes(id), criada_por TEXT NOT NULL REFERENCES usuarios(id), criada_em TEXT NOT NULL);
 CREATE INDEX IF NOT EXISTS execucoes_ocupante ON execucoes(ocupante_id, criada_em);
+CREATE TABLE IF NOT EXISTS modelos_funcao (
+  id TEXT PRIMARY KEY, nome TEXT NOT NULL, descricao TEXT NOT NULL DEFAULT '', estrutura TEXT NOT NULL,
+  ativo INTEGER NOT NULL DEFAULT 1, atualizado_em TEXT NOT NULL);
 `;
 
 export function transacao<T>(db: DatabaseSync, fn: () => T): T {

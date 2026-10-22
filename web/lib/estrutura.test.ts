@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { estruturaVazia, novaCompetencia, novaTarefa, pendenciasCompetencias, pendenciasEstrutura, pendenciasTarefas, validarEstrutura, type Estrutura } from './estrutura.ts';
+import { copiarEstrutura, estruturaVazia, novaCompetencia, novaTarefa, pendenciasCompetencias, pendenciasEstrutura, pendenciasTarefas, validarEstrutura, type Estrutura } from './estrutura.ts';
 
 function completa(): Estrutura {
   const e = estruturaVazia();
@@ -66,4 +66,19 @@ test('aceita sugestões ignoradas opcionais e valida o formato', () => {
   assert.equal('sugestoes_ignoradas' in validarEstrutura(e), false);
   assert.deepEqual(validarEstrutura({ ...e, sugestoes_ignoradas: ['R1', 'R3'] }).sugestoes_ignoradas, ['R1', 'R3']);
   assert.throws(() => validarEstrutura({ ...e, sugestoes_ignoradas: [1] }), /sugestões ignoradas/);
+});
+
+test('copia a estrutura com IDs novos e origem marcada', () => {
+  const e = completa();
+  e.salvaguardas[0] = { ...e.salvaguardas[0], resposta: 'Sim' };
+  e.sugestoes_ignoradas = ['R1'];
+  e.tarefas[0].editada = true;
+  const c = copiarEstrutura(e, 'modelo', false);
+  assert.notEqual(c.tarefas[0].id, e.tarefas[0].id);
+  assert.equal(c.competencias[0].tarefa_id, c.tarefas[0].id);
+  assert.deepEqual([c.tarefas[0].origem, c.tarefas[0].editada, c.competencias[0].origem], ['modelo', false, 'modelo']);
+  assert.equal(c.salvaguardas[0].resposta, 'Não sei');
+  assert.equal('sugestoes_ignoradas' in c, false);
+  assert.equal(copiarEstrutura(e, 'copia', true).salvaguardas[0].resposta, 'Sim');
+  assert.deepEqual(validarEstrutura(c), c);
 });

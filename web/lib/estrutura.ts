@@ -170,3 +170,16 @@ export function pendenciasCompetencias(e: Estrutura): string[] {
 }
 
 export const pendenciasEstrutura = (e: Estrutura): string[] => [...pendenciasTarefas(e), ...pendenciasCompetencias(e)];
+
+/** Cópia para nova função ou modelo: IDs novos, origem marcada e nada de sugestões ignoradas. */
+export function copiarEstrutura(e: Estrutura, origem: 'modelo' | 'copia', manterSalvaguardas: boolean): Estrutura {
+  const ids = new Map(e.tarefas.map(t => [t.id, novoId()]));
+  const tarefa = (id: string) => ids.get(id) ?? '';
+  return {
+    versao: 1,
+    tarefas: e.tarefas.map(t => ({ ...t, id: tarefa(t.id), origem, editada: false })),
+    competencias: e.competencias.map(c => ({ ...c, id: novoId(), tarefa_id: tarefa(c.tarefa_id), origem, editada: false })),
+    perdem_centralidade: e.perdem_centralidade.map(p => ({ ...p, id: novoId(), tarefa_id: tarefa(p.tarefa_id) })),
+    salvaguardas: manterSalvaguardas ? e.salvaguardas.map(s => ({ ...s })) : estruturaVazia().salvaguardas,
+  };
+}
