@@ -5,9 +5,9 @@ import path from 'node:path';
 import { db, assertOwner } from './session';
 
 export const root = process.env.MRCC_ROOT || path.resolve(process.cwd(), '..');
-const python = process.env.MRCC_PYTHON || path.join(root, '.venv', process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
+export const python = process.env.MRCC_PYTHON || path.join(root, '.venv', process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
 export const dataDir = path.join(process.cwd(), 'data');
-const bridge = path.join(root, 'web_bridge.py');
+export const bridge = path.join(root, 'web_bridge.py');
 type Job = { id: string; status: 'running' | 'done' | 'error'; createdAt: string; error?: string; mode: string; runnerId: string };
 const state = globalThis as typeof globalThis & { mrccBusy?: boolean; mrccRunnerId?: string };
 const runnerId = state.mrccRunnerId ||= randomUUID();
