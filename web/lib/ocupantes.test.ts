@@ -1,0 +1,53 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { bancoDeTeste, ID, inserirEmpresa } from './apoio-testes.ts';
+import { estruturaVazia } from './estrutura.ts';
+import { arquivarFuncao, criarFuncao } from './funcoes.ts';
+import { arquivarOcupante, criarOcupante, listarOcupantes, obterOcupante, salvarOcupante, validarNiveis } from './ocupantes.ts';
+
+function cenario() {
+  const db = bancoDeTeste();
+  const a = inserirEmpresa(db, 'A');
+  const b = inserirEmpresa(db, 'B');
+  const funcaoId = criarFuncao(db, a, { nome: 'Caixa', estrutura: estruturaVazia(), origem: 'branco' });
+  return { db, a, b, funcaoId };
+}
+
+test('cria ocupante com prazo padrão e respeita a empresa', () => {
+  const { db, a, b, funcaoId } = cenario();
+  const id = criarOcupante(db, a, funcaoId, { apelido: ' Atendente 1 ' });
+  const o = obterOcupante(db, a, id);
+  assert.deepEqual({ apelido: o.apelido, prazoDias: o.prazoDias, niveis: o.niveis, funcaoId: o.funcaoId, empresaId: o.empresaId }, { apelido: 'Atendente 1', prazoDias: 14, niveis: {}, funcaoId, empresaId: a });
+  assert.throws(() => obterOcupante(db, b, id), { status: 404 });
+  assert.throws(() => criarOcupante(db, b, funcaoId, { apelido: 'X' }), { status: 404 });
+});
+
+test('salva níveis, apelido e prazo validados', () => {
+  const { db, a, funcaoId } = cenario();
+  const id = criarOcupante(db, a, funcaoId, { apelido: 'A1' });
+  salvarOcupante(db, a, id, { apelido: 'A2', niveis: { [ID(1)]: { nivel: 'N1', respostas: [true, false, null] } }, prazoDias: 30 });
+  const o = obterOcupante(db, a, id);
+  assert.deepEqual({ apelido: o.apelido, prazoDias: o.prazoDias, niveis: o.niveis }, { apelido: 'A2', prazoDias: 30, niveis: { [ID(1)]: { nivel: 'N1', respostas: [true, false, null] } } });
+  assert.throws(() => salvarOcupante(db, a, id, { apelido: 'A2', niveis: {}, prazoDias: 0 }), { status: 400 });
+  assert.throws(() => salvarOcupante(db, a, id, { apelido: 'A2', niveis: {}, prazoDias: 1.5 }), { status: 400 });
+  assert.throws(() => salvarOcupante(db, a, id, { apelido: '', niveis: {}, prazoDias: 14 }), { status: 400 });
+});
+
+test('rejeita níveis malformados', () => {
+  assert.throws(() => validarNiveis({ [ID(1)]: { nivel: 'N4', respostas: null } }), { status: 400 });
+  assert.throws(() => validarNiveis({ 'nao-uuid': { nivel: 'N1', respostas: null } }), { status: 400 });
+  assert.throws(() => validarNiveis({ [ID(1)]: { nivel: 'N1', respostas: [true] } }), { status: 400 });
+  assert.throws(() => validarNiveis([]), { status: 400 });
+  assert.deepEqual(validarNiveis({ [ID(1)]: { nivel: 'N3', respostas: null, extra: 1 } }), { [ID(1)]: { nivel: 'N3', respostas: null } });
+});
+
+test('lista ocupantes ativos com níveis preenchidos das competências atuais', () => {
+  const { db, a, funcaoId } = cenario();
+  const id = criarOcupante(db, a, funcaoId, { apelido: 'A1', niveis: { [ID(99)]: { nivel: 'N1', respostas: null } } });
+  const outro = criarOcupante(db, a, funcaoId, { apelido: 'A2' });
+  arquivarOcupante(db, a, outro);
+  const lista = listarOcupantes(db, a, funcaoId);
+  assert.deepEqual(lista.map(o => [o.id, o.apelido, o.niveisPreenchidos, o.trilhas]), [[id, 'A1', 0, 0]]);
+  arquivarFuncao(db, a, funcaoId);
+  assert.throws(() => obterOcupante(db, a, id), { status: 404 });
+});
