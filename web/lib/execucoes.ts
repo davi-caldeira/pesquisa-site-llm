@@ -17,7 +17,7 @@ const fila = (estado.mrccFila ??= new Fila(6));
 const runnerId = (estado.mrccRunnerId ??= randomUUID());
 const ARQUIVO_MANUTENCAO = process.env.MRCC_MAINTENANCE_FILE || '/var/lib/mrcc-pv-deploy/maintenance';
 // Nomes exigidos pelo wait_idle do publicador (pgrep "web_bridge.py (analise|llm)").
-const MODO_BRIDGE: Record<TipoExecucao, string> = { trilha: 'llm', diagnostico: 'analise' };
+const MODO_BRIDGE: Record<TipoExecucao, string> = { trilha: 'llm', diagnostico: 'analise', extracao: 'extrair' };
 
 const gravarStatus = (s: StatusExecucao) => writeFile(path.join(jobPath(s.id), 'status.json'), JSON.stringify(s));
 function publico(s: StatusExecucao): ExecucaoPublica {
@@ -48,8 +48,8 @@ async function rodar(inicial: StatusExecucao): Promise<void> {
   });
 }
 
-export async function iniciarExecucao(db: DatabaseSync, dados: { tipo: TipoExecucao; empresaId: string; funcaoId: string; ocupanteId: string; usuarioId: string; entrada: unknown }): Promise<ExecucaoPublica> {
-  if (dados.tipo === 'trilha' && existsSync(ARQUIVO_MANUTENCAO)) throw new HttpErro(503, 'O site está sendo atualizado. Aguarde um minuto e tente novamente.');
+export async function iniciarExecucao(db: DatabaseSync, dados: { tipo: TipoExecucao; empresaId: string; funcaoId: string | null; ocupanteId: string | null; usuarioId: string; entrada: unknown }): Promise<ExecucaoPublica> {
+  if (dados.tipo !== 'diagnostico' && existsSync(ARQUIVO_MANUTENCAO)) throw new HttpErro(503, 'O site está sendo atualizado. Aguarde um minuto e tente novamente.');
   const conteudo = JSON.stringify(dados.entrada);
   if (conteudo.length > 100_000) throw new HttpErro(413, 'Formulário extenso demais. Reduza as descrições.');
   const id = randomUUID();
@@ -58,7 +58,7 @@ export async function iniciarExecucao(db: DatabaseSync, dados: { tipo: TipoExecu
   const preparado = new Promise<boolean>(r => { liberar = r; });
   const executar = async () => { if (await preparado) await rodar(status); };
   // Reserva o lugar antes de criar arquivos: com a fila cheia, nada é gravado.
-  if (dados.tipo === 'trilha') fila.enfileirar({ id, empresaId: dados.empresaId, executar });
+  if (dados.tipo !== 'diagnostico') fila.enfileirar({ id, empresaId: dados.empresaId, executar });
   try {
     await mkdir(path.join(dataDir, id), { recursive: true, mode: 0o700 });
     await writeFile(path.join(dataDir, id, 'input.json'), conteudo);
@@ -82,7 +82,8 @@ export async function lerExecucao(db: DatabaseSync, usuario: Usuario, id: string
   const pasta = jobPath(id);
   const { status, alterado } = normalizarStatus(JSON.parse(await readFile(path.join(pasta, 'status.json'), 'utf8')) as StatusExecucao, runnerId);
   if (alterado) await gravarStatus(status);
-  const result = status.status === 'concluida' ? JSON.parse(await readFile(path.join(pasta, 'analise.json'), 'utf8')) as unknown : null;
+  const arquivo = status.tipo === 'extracao' ? 'extracao.json' : 'analise.json';
+  const result = status.status === 'concluida' ? JSON.parse(await readFile(path.join(pasta, arquivo), 'utf8')) as unknown : null;
   return { ...publico(status), result, ocupanteId: linha.ocupante_id, funcaoId: linha.funcao_id };
 }
 

@@ -25,3 +25,8 @@ test('execução acima do limite expira; dentro do limite continua', () => {
 test('concluída e erro não mudam', () => {
   for (const status of ['concluida', 'erro'] as const) assert.deepEqual(normalizarStatus({ ...base, status }, 'r2'), { status: { ...base, status }, alterado: false });
 });
+
+test('extração interrompida por reinício também vira erro visível', () => {
+  const r = normalizarStatus({ ...base, tipo: 'extracao', status: 'aguardando' }, 'r2');
+  assert.deepEqual([r.status.status, r.alterado], ['erro', true]);
+});

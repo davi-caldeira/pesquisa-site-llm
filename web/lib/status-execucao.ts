@@ -1,4 +1,4 @@
-export type TipoExecucao = 'trilha' | 'diagnostico';
+export type TipoExecucao = 'trilha' | 'diagnostico' | 'extracao';
 export type EstadoExecucao = 'aguardando' | 'executando' | 'concluida' | 'erro';
 export type StatusExecucao = { id: string; tipo: TipoExecucao; status: EstadoExecucao; criadaEm: string; iniciadaEm?: string; runnerId: string; error?: string };
 
