@@ -37,6 +37,9 @@ CREATE TABLE IF NOT EXISTS execucoes (
   empresa_id TEXT NOT NULL REFERENCES empresas(id), funcao_id TEXT REFERENCES funcoes(id),
   ocupante_id TEXT REFERENCES ocupantes(id), criada_por TEXT NOT NULL REFERENCES usuarios(id), criada_em TEXT NOT NULL);
 CREATE INDEX IF NOT EXISTS execucoes_ocupante ON execucoes(ocupante_id, criada_em);
+CREATE TABLE IF NOT EXISTS avaliacoes_uso (
+  funcao_id TEXT PRIMARY KEY REFERENCES funcoes(id), nota INTEGER NOT NULL CHECK (nota BETWEEN 1 AND 5),
+  comentario TEXT NOT NULL DEFAULT '', criada_em TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS ferramentas_ia (
   id TEXT PRIMARY KEY, empresa_id TEXT NOT NULL REFERENCES empresas(id), nome TEXT NOT NULL, criada_em TEXT NOT NULL);
 CREATE INDEX IF NOT EXISTS ferramentas_empresa ON ferramentas_ia(empresa_id);
