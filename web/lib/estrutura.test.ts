@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { copiarEstrutura, estruturaVazia, novaCompetencia, novaTarefa, pendenciasCompetencias, pendenciasEstrutura, pendenciasTarefas, validarEstrutura, type Estrutura } from './estrutura.ts';
+import { copiarEstrutura, efeitoAutomatico, estruturaVazia, novaCompetencia, novaTarefa, pendenciasCompetencias, pendenciasEstrutura, pendenciasTarefas, validarEstrutura, type Estrutura } from './estrutura.ts';
 
 function completa(): Estrutura {
   const e = estruturaVazia();
@@ -81,4 +81,12 @@ test('copia a estrutura com IDs novos e origem marcada', () => {
   assert.equal('sugestoes_ignoradas' in c, false);
   assert.equal(copiarEstrutura(e, 'copia', true).salvaguardas[0].resposta, 'Sim');
   assert.deepEqual(validarEstrutura(c), c);
+});
+
+test('tarefa sem ferramenta e sem efeito passa a "não mudou"', () => {
+  const t = { ...novaTarefa(), tarefa: 'Organizar o estoque' };
+  assert.equal(efeitoAutomatico(t).efeito_ia, 'I');
+  assert.equal(efeitoAutomatico({ ...t, ferramenta: 'Sistema com IA' }).efeito_ia, null);
+  assert.equal(efeitoAutomatico({ ...t, efeito_ia: 'N' }).efeito_ia, 'N');
+  assert.equal(efeitoAutomatico({ ...t, tarefa: '  ' }).efeito_ia, null);
 });

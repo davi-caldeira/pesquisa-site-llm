@@ -19,14 +19,23 @@ const ETAPAS = [
   { nome: 'Ocupantes', detalhe: 'Níveis e trilhas', titulo: 'Avalie cada pessoa.', texto: 'Para cada ocupante, registre o nível atual e gere a trilha de desenvolvimento.', tag: 'M3 + M4 · Trilha' },
 ];
 
-type Props = { funcao: { id: string; nome: string; estrutura: Estrutura; atualizadaEm: string }; ocupantes: ResumoOcupante[]; etapaInicial?: number };
+type Props = { funcao: { id: string; nome: string; estrutura: Estrutura; atualizadaEm: string }; ocupantes: ResumoOcupante[]; etapaInicial?: number; ferramentas: string[] };
 
-export default function EditorFuncao({ funcao, ocupantes, etapaInicial = 0 }: Props) {
+export default function EditorFuncao({ funcao, ocupantes, etapaInicial = 0, ferramentas }: Props) {
   const router = useRouter();
   const [nome, setNome] = useState(funcao.nome);
   const [estrutura, setEstrutura] = useState(funcao.estrutura);
   const [etapa, setEtapa] = useState(etapaInicial);
   const [erroAcao, setErroAcao] = useState('');
+  const [ferramentasLoja, setFerramentasLoja] = useState(ferramentas);
+  const adicionarFerramenta = async (nome: string) => {
+    try {
+      const nova = await chamarApi<{ nome: string }>('/api/ferramentas', { method: 'POST', json: { nome } });
+      setFerramentasLoja(lista => (lista.includes(nova.nome) ? lista : [...lista, nova.nome]));
+    } catch (e) {
+      setErroAcao(e instanceof Error ? e.message : 'Não foi possível adicionar a ferramenta.');
+    }
+  };
   const { estado, erro, salvarAgora } = useAutosave(`/api/funcoes/${funcao.id}`, { nome, estrutura }, funcao.atualizadaEm);
   // Voltar pelo navegador reaproveita dados antigos da página: pede a versão atual ao servidor.
   // Se ela mudou, a página do servidor troca a key e o editor remonta com os dados novos.
@@ -78,7 +87,7 @@ export default function EditorFuncao({ funcao, ocupantes, etapaInicial = 0 }: Pr
           <Campo rotulo="Nome da função"><input value={nome} maxLength={120} onChange={e => setNome(e.target.value)} placeholder="Ex.: Atendente de balcão" /></Campo>
           <div className="role-caption">Descreva funções e tarefas.<br />Evite nomes e dados pessoais.</div>
         </div>
-        {etapa === 0 && <EtapaTarefas estrutura={estrutura} aoMudar={setEstrutura} />}
+        {etapa === 0 && <EtapaTarefas estrutura={estrutura} aoMudar={setEstrutura} ferramentas={ferramentasLoja} aoAdicionarFerramenta={adicionarFerramenta} />}
         {etapa === 1 && <EtapaCompetencias estrutura={estrutura} aoMudar={setEstrutura} />}
         {etapa === 2 && <EtapaSalvaguarda estrutura={estrutura} aoMudar={setEstrutura} />}
         {etapa === 3 && <EtapaOcupantes funcaoId={funcao.id} ocupantes={ocupantes} pendencias={pendenciasEstrutura(estrutura)} totalCompetencias={estrutura.competencias.length} navegar={navegar} />}

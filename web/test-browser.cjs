@@ -30,7 +30,7 @@ const fs = require('node:fs');
   await page.getByRole('button', { name: 'Começar em branco' }).click();
   await expect(page.getByRole('heading', { name: 'Entenda o trabalho.' })).toBeVisible();
   await page.getByLabel('Tarefa', { exact: true }).fill('Montar orçamento para o cliente');
-  await page.getByLabel('Efeito da IA').selectOption('P');
+  await page.getByRole('radio', { name: 'A IA ajuda (P)' }).click();
   await page.getByRole('button', { name: 'Continuar' }).click();
   await page.getByRole('button', { name: '+ Adicionar competência' }).click();
   await page.getByLabel('Competência', { exact: true }).fill('Proficiência na ferramenta de orçamento');

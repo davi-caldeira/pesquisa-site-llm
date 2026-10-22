@@ -183,3 +183,8 @@ export function copiarEstrutura(e: Estrutura, origem: 'modelo' | 'copia', manter
     salvaguardas: manterSalvaguardas ? e.salvaguardas.map(s => ({ ...s })) : estruturaVazia().salvaguardas,
   };
 }
+
+/** Sem ferramenta e sem efeito escolhido, a tarefa "não mudou" (fluxo alternativo do UC3). */
+export function efeitoAutomatico(t: Tarefa): Tarefa {
+  return t.tarefa.trim() && !t.ferramenta.trim() && t.efeito_ia === null ? { ...t, efeito_ia: 'I' } : t;
+}
