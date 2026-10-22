@@ -10,7 +10,11 @@ export default async function PainelLoja() {
     <main className="page">
       <div className="page-heading">
         <div><p className="eyebrow">PAINEL DA LOJA</p><h1>Funções da loja</h1><p>Cada função reúne as tarefas, as competências e a salvaguarda. Depois, avalie cada pessoa que ocupa a função.</p></div>
-        <Link className="button primary" href="/funcoes/nova">+ Nova função</Link>
+        <div className="row-actions">
+          <Link className="button secondary" href="/ferramentas">Ferramentas de IA</Link>
+          <Link className="button secondary" href="/acoes">Ações da loja</Link>
+          <Link className="button primary" href="/funcoes/nova">+ Nova função</Link>
+        </div>
       </div>
       {funcoes.length ? (
         <div className="cards">{funcoes.map(f => (

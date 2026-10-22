@@ -13,7 +13,8 @@ export async function POST(request: Request) {
     const token = await tokenAtual();
     if (!token) throw new HttpErro(401, 'Sua sessão expirou. Entre novamente.');
     await trocarSenha(db(), usuario.id, corpo.senhaAtual, corpo.novaSenha, token);
-    return Response.json({ destino: destinoInicial({ ...usuario, trocarSenha: false }) });
+    const destino = usuario.papel === 'gestor' && usuario.trocarSenha ? '/boas-vindas' : destinoInicial({ ...usuario, trocarSenha: false });
+    return Response.json({ destino });
   } catch (e) {
     return errorResponse(e);
   }
