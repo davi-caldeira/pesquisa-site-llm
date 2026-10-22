@@ -73,3 +73,9 @@ export function listarFuncoes(db: DatabaseSync, empresaId: string): ResumoFuncao
     };
   });
 }
+
+export function listarFuncoesDeTodas(db: DatabaseSync): { id: string; nome: string; empresa: string }[] {
+  const linhas = db.prepare(`SELECT f.id, f.nome, e.nome AS empresa FROM funcoes f JOIN empresas e ON e.id = f.empresa_id
+    WHERE f.arquivada = 0 ORDER BY e.nome COLLATE NOCASE, f.nome COLLATE NOCASE`).all() as { id: string; nome: string; empresa: string }[];
+  return linhas.map(l => ({ id: l.id, nome: l.nome, empresa: l.empresa }));
+}

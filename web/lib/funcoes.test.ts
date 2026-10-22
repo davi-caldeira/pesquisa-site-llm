@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { bancoDeTeste, inserirEmpresa } from './apoio-testes.ts';
 import { estruturaVazia } from './estrutura.ts';
-import { arquivarFuncao, criarFuncao, listarFuncoes, obterFuncao, salvarFuncao } from './funcoes.ts';
+import { arquivarFuncao, criarFuncao, listarFuncoes, listarFuncoesDeTodas, obterFuncao, salvarFuncao } from './funcoes.ts';
 
 test('cria, obtém e salva função dentro da própria empresa', () => {
   const db = bancoDeTeste();
@@ -51,4 +51,15 @@ test('lista com contagens e esconde arquivadas', () => {
   arquivarFuncao(db, a, id);
   assert.deepEqual(listarFuncoes(db, a), []);
   assert.throws(() => obterFuncao(db, a, id), { status: 404 });
+});
+
+test('admin lista funções ativas de todas as empresas com o nome da loja', () => {
+  const db = bancoDeTeste();
+  const a = inserirEmpresa(db, 'Loja A');
+  const b = inserirEmpresa(db, 'Loja B');
+  criarFuncao(db, a, { nome: 'Caixa', estrutura: estruturaVazia(), origem: 'branco' });
+  const arquivada = criarFuncao(db, b, { nome: 'Antiga', estrutura: estruturaVazia(), origem: 'branco' });
+  criarFuncao(db, b, { nome: 'Estoquista', estrutura: estruturaVazia(), origem: 'branco' });
+  arquivarFuncao(db, b, arquivada);
+  assert.deepEqual(listarFuncoesDeTodas(db).map(f => [f.empresa, f.nome]), [['Loja A', 'Caixa'], ['Loja B', 'Estoquista']]);
 });
