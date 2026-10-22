@@ -4,10 +4,11 @@ import { useRouter } from 'next/navigation';
 import { chamarApi } from '@/components/api';
 import { Campo, Selecao } from '@/components/Campo';
 import type { ResumoModelo } from '@/lib/modelos';
+import DescreverComIA from './DescreverComIA';
 
-type Props = { modelos: ResumoModelo[]; funcoes: { id: string; nome: string }[] };
+type Props = { modelos: ResumoModelo[]; funcoes: { id: string; nome: string }[]; extracaoInicial?: string };
 
-export default function NovaFuncao({ modelos, funcoes }: Props) {
+export default function NovaFuncao({ modelos, funcoes, extracaoInicial }: Props) {
   const router = useRouter();
   const [nome, setNome] = useState('');
   const [copiarDe, setCopiarDe] = useState('');
@@ -57,6 +58,8 @@ export default function NovaFuncao({ modelos, funcoes }: Props) {
           <span className="text-button">Usar este modelo →</span>
         </button>
       ))}</div>
+
+      <DescreverComIA extracaoInicial={extracaoInicial} />
 
       <div className="form-grid">
         {funcoes.length > 0 && (

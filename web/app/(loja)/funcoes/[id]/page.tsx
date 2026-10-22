@@ -14,5 +14,5 @@ export default async function PaginaFuncao({ params, searchParams }: Props) {
   const funcao = ou404(() => obterFuncao(db(), gestor.empresaId, id));
   const ocupantes = listarOcupantes(db(), gestor.empresaId, id);
   // Ao voltar da página de um ocupante, abre direto na etapa Ocupantes.
-  return <EditorFuncao key={funcao.atualizadaEm} funcao={{ id: funcao.id, nome: funcao.nome, estrutura: funcao.estrutura, atualizadaEm: funcao.atualizadaEm }} ocupantes={ocupantes} ferramentas={listarFerramentas(db(), gestor.empresaId).map(f => f.nome)} etapaInicial={etapa === 'ocupantes' ? 3 : 0} />;
+  return <EditorFuncao key={funcao.atualizadaEm} funcao={{ id: funcao.id, nome: funcao.nome, estrutura: funcao.estrutura, atualizadaEm: funcao.atualizadaEm }} ocupantes={ocupantes} ferramentas={listarFerramentas(db(), gestor.empresaId).map(f => f.nome)} etapaInicial={etapa === 'ocupantes' ? 3 : etapa === 'competencias' ? 1 : 0} />;
 }

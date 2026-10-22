@@ -7,7 +7,7 @@ Endereço: **https://147.15.89.156**
 O acesso exige login. A equipe da pesquisa (admin) cadastra cada empresa com o e-mail do gestor e entrega a senha temporária, que é trocada no primeiro acesso.
 
 1. **Admin** (`/admin`): cadastra empresas, gera nova senha temporária e desativa ou reativa o acesso.
-2. **Gestor** (`/`): vê as funções da loja e cria uma nova a partir de um **modelo pronto**, copiando outra função da loja, em branco ou importando a planilha MRCC-PV. No primeiro acesso, informa as **ferramentas de IA** da loja (também em `/ferramentas`); elas aparecem como sugestão nas tarefas.
+2. **Gestor** (`/`): vê as funções da loja e cria uma nova a partir de um **modelo pronto**, copiando outra função da loja, em branco, importando a planilha MRCC-PV ou **descrevendo a função com as próprias palavras** (a IA sugere as tarefas para revisão; leva de 1 a 2 minutos e entra na mesma fila das trilhas). No primeiro acesso, informa as **ferramentas de IA** da loja (também em `/ferramentas`); elas aparecem como sugestão nas tarefas.
 3. Em cada função, preenche Tarefas (botões e linguagem simples; sem ferramenta, o efeito vira "Não mudou"), Competências e Salvaguarda. A etapa Competências **sugere competências a partir das tarefas** (RF05), com o motivo de cada uma, e lista o que **deixa de ser central** (RF07). O salvamento é automático.
 4. Na etapa Ocupantes, adiciona cada pessoa por apelido, sem dados pessoais. Na página do ocupante, responde **três perguntas de sim/não** por competência (Quadro 4 do PBL3) ou escolhe o nível diretamente; dá para copiar os níveis de outro ocupante.
 5. Clica em **Gerar recomendações**. Os pedidos entram em uma fila (uma geração por vez na VM, uma por loja). A página mostra a posição e o resultado.

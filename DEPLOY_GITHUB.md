@@ -64,6 +64,8 @@ A versão com login cria as tabelas novas sozinha na inicialização. Três pass
 
 3. **Conferir** `https://147.15.89.156/login` e entrar como admin.
 
+4. **Atualizar o publicador** (fase 3): reinstale `deploy/mrcc-deploy-entry.py` em `/usr/local/bin/mrcc-deploy-entry` (dono root), para o deploy esperar também as extrações em andamento (`extrair`) e rodar `test_web_extracao`. Depois, valide a extração com a LLM real: `cd /home/ubuntu/mrcc-deploy/current && .venv/bin/python validar_extracao.py`.
+
 Se houver rollback para a versão anterior ao login, o modo anônimo volta temporariamente; as tabelas novas ficam intactas e são usadas de novo na próxima publicação.
 
 ## Credencial de publicação
