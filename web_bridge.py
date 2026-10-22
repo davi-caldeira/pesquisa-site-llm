@@ -11,6 +11,7 @@ from pathlib import Path
 
 from openpyxl import load_workbook
 import recomendar as r
+import web_extracao
 import web_llm
 
 ROOT = Path(__file__).parent
@@ -131,7 +132,7 @@ def processar(entrada, pasta, modo):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("acao", choices=["seed", "importar", "analise", "llm", "pdf"])
+    parser.add_argument("acao", choices=["seed", "importar", "analise", "llm", "pdf", "extrair"])
     parser.add_argument("--entrada", type=Path)
     parser.add_argument("--saida", type=Path)
     args = parser.parse_args()
@@ -139,6 +140,9 @@ def main():
         from relatorio_pdf import gerar_pdf
         arquivo = gerar_pdf(args.saida)
         print(json.dumps({'sucesso': True, 'arquivo': arquivo.name}))
+    elif args.acao == 'extrair':
+        resultado = web_extracao.gerar(json.loads(args.entrada.read_text(encoding='utf-8')), r.MODELO, args.saida)
+        print(json.dumps({'sucesso': True, 'tarefas': len(resultado['tarefas'])}))
     elif args.acao in ("seed", "importar"):
         entrada = entrada_da_planilha(TEMPLATE if args.acao == "seed" else args.entrada)
         validar_entrada(entrada)
