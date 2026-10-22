@@ -60,3 +60,10 @@ test('aponta competência sem nome e sem tarefa (ex.: tarefa removida)', () => {
   assert.deepEqual(pendenciasCompetencias(e), ['Competência 2: informe o nome.', 'Competência 2: escolha a tarefa associada.']);
   assert.deepEqual(pendenciasCompetencias({ ...e, competencias: [] }), ['Cadastre ao menos uma competência.']);
 });
+
+test('aceita sugestões ignoradas opcionais e valida o formato', () => {
+  const e = completa();
+  assert.equal('sugestoes_ignoradas' in validarEstrutura(e), false);
+  assert.deepEqual(validarEstrutura({ ...e, sugestoes_ignoradas: ['R1', 'R3'] }).sugestoes_ignoradas, ['R1', 'R3']);
+  assert.throws(() => validarEstrutura({ ...e, sugestoes_ignoradas: [1] }), /sugestões ignoradas/);
+});

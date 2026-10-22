@@ -25,7 +25,7 @@ export type Tarefa = { id: string; tarefa: string; frequencia: Frequencia; criti
 export type Competencia = { id: string; competencia: string; eixo: Eixo; tarefa_id: string; alvo: Nivel; origem: OrigemCompetencia; motivo?: string; editada: boolean };
 export type PerdaCentralidade = { id: string; descricao: string; tarefa_id: string; origem: 'regra' | 'manual' };
 export type RespostaSalvaguarda = { numero: number; resposta: Resposta; observacao: string; ajuste: string };
-export type Estrutura = { versao: 1; tarefas: Tarefa[]; competencias: Competencia[]; perdem_centralidade: PerdaCentralidade[]; salvaguardas: RespostaSalvaguarda[] };
+export type Estrutura = { versao: 1; tarefas: Tarefa[]; competencias: Competencia[]; perdem_centralidade: PerdaCentralidade[]; salvaguardas: RespostaSalvaguarda[]; sugestoes_ignoradas?: string[] };
 export type NivelOcupante = { nivel: Nivel; respostas: (boolean | null)[] | null };
 export type Niveis = Record<string, NivelOcupante>;
 
@@ -137,7 +137,11 @@ export function validarEstrutura(valor: unknown): Estrutura {
     };
   });
   if (salvaguardas.length !== 6) falha('salvaguardas');
-  return { versao: 1, tarefas, competencias, perdem_centralidade, salvaguardas };
+  const resultado: Estrutura = { versao: 1, tarefas, competencias, perdem_centralidade, salvaguardas };
+  if (e.sugestoes_ignoradas !== undefined) {
+    resultado.sugestoes_ignoradas = lista(e.sugestoes_ignoradas, 'sugestões ignoradas', 50).map(v => texto(v, 'sugestões ignoradas', 80));
+  }
+  return resultado;
 }
 
 const chave = (s: string) => s.trim().replace(/\s+/g, ' ').toLocaleLowerCase('pt-BR');
