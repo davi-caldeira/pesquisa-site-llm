@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { chamarApi } from '@/components/api';
 import { Campo } from '@/components/Campo';
 import { useAutosave } from '@/components/useAutosave';
+import { useTempoAtivo } from '@/components/useTempoAtivo';
 import { pendenciasCompetencias, pendenciasEstrutura, pendenciasTarefas, type Estrutura } from '@/lib/estrutura';
 import type { ResumoOcupante } from '@/lib/ocupantes';
 import EtapaCompetencias from './EtapaCompetencias';
@@ -27,6 +28,7 @@ export default function EditorFuncao({ funcao, ocupantes, etapaInicial = 0 }: Pr
   const [etapa, setEtapa] = useState(etapaInicial);
   const [erroAcao, setErroAcao] = useState('');
   const { estado, erro, salvarAgora } = useAutosave(`/api/funcoes/${funcao.id}`, { nome, estrutura });
+  useTempoAtivo('funcao', funcao.id);
   const pendTarefas = useMemo(() => pendenciasTarefas(estrutura), [estrutura]);
   const pendCompetencias = useMemo(() => pendenciasCompetencias(estrutura), [estrutura]);
   const bloqueio = etapa === 0 ? pendTarefas : etapa === 1 ? pendCompetencias : [];

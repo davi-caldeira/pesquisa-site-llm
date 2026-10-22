@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { chamarApi } from '@/components/api';
 import { Campo, Selecao } from '@/components/Campo';
 import { useAutosave } from '@/components/useAutosave';
+import { useTempoAtivo } from '@/components/useTempoAtivo';
 import { NIVEIS, ROTULOS_NIVEL, pendenciasEstrutura, type Estrutura, type Nivel, type Niveis } from '@/lib/estrutura';
 import { calcularLacunas } from '@/lib/lacunas';
 import type { AcaoCatalogo } from '@/lib/seed';
@@ -31,6 +32,7 @@ export default function PaginaOcupante({ funcao, ocupante, historico: historicoI
   const [catalogoAberto, setCatalogoAberto] = useState(false);
   const [segundos, setSegundos] = useState(0);
   const { estado, erro: erroSalvar, salvarAgora } = useAutosave(`/api/ocupantes/${ocupante.id}`, { apelido, niveis, prazoDias });
+  useTempoAtivo('ocupante', ocupante.id);
   const emAndamento = execucao?.status === 'aguardando' || execucao?.status === 'executando';
   const ocupado = iniciando || emAndamento;
   const { estrutura } = funcao;
