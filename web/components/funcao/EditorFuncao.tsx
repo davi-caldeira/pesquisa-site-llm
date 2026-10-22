@@ -18,13 +18,13 @@ const ETAPAS = [
   { nome: 'Ocupantes', detalhe: 'Níveis e trilhas', titulo: 'Avalie cada pessoa.', texto: 'Para cada ocupante, registre o nível atual e gere a trilha de desenvolvimento.', tag: 'M3 + M4 · Trilha' },
 ];
 
-type Props = { funcao: { id: string; nome: string; estrutura: Estrutura }; ocupantes: ResumoOcupante[] };
+type Props = { funcao: { id: string; nome: string; estrutura: Estrutura }; ocupantes: ResumoOcupante[]; etapaInicial?: number };
 
-export default function EditorFuncao({ funcao, ocupantes }: Props) {
+export default function EditorFuncao({ funcao, ocupantes, etapaInicial = 0 }: Props) {
   const router = useRouter();
   const [nome, setNome] = useState(funcao.nome);
   const [estrutura, setEstrutura] = useState(funcao.estrutura);
-  const [etapa, setEtapa] = useState(0);
+  const [etapa, setEtapa] = useState(etapaInicial);
   const [erroAcao, setErroAcao] = useState('');
   const { estado, erro, salvarAgora } = useAutosave(`/api/funcoes/${funcao.id}`, { nome, estrutura });
   const pendTarefas = useMemo(() => pendenciasTarefas(estrutura), [estrutura]);
