@@ -4,7 +4,7 @@ import { listarCatalogoAtivo } from '@/lib/catalogo';
 import { db } from '@/lib/db';
 import { listarExecucoes } from '@/lib/execucoes';
 import { obterFuncao } from '@/lib/funcoes';
-import { obterOcupante } from '@/lib/ocupantes';
+import { niveisDosOutros, obterOcupante } from '@/lib/ocupantes';
 import { exigirPaginaGestor, ou404 } from '@/lib/sessao-web';
 
 export default async function Pagina({ params }: { params: Promise<{ id: string; oid: string }> }) {
@@ -23,6 +23,7 @@ export default async function Pagina({ params }: { params: Promise<{ id: string;
       historico={historico}
       execucaoInicial={historico[0]?.id ?? null}
       catalogo={listarCatalogoAtivo(banco, gestor.empresaId)}
+      outros={niveisDosOutros(banco, gestor.empresaId, funcao.id, ocupante.id)}
     />
   );
 }

@@ -84,3 +84,10 @@ export function listarOcupantes(db: DatabaseSync, empresaId: string | null, func
     return { id: l.id, apelido: l.apelido, niveisPreenchidos: competencias.filter(c => niveis[c]).length, trilhas: Number(l.trilhas), atualizadoEm: l.atualizado_em };
   });
 }
+
+export function niveisDosOutros(db: DatabaseSync, empresaId: string, funcaoId: string, excetoId: string): { id: string; apelido: string; niveis: Niveis }[] {
+  obterFuncao(db, empresaId, funcaoId);
+  const linhas = db.prepare('SELECT id, apelido, niveis FROM ocupantes WHERE funcao_id = ? AND arquivado = 0 AND id <> ? ORDER BY criado_em')
+    .all(funcaoId, excetoId) as { id: string; apelido: string; niveis: string }[];
+  return linhas.map(l => ({ id: l.id, apelido: l.apelido, niveis: JSON.parse(l.niveis) as Niveis }));
+}

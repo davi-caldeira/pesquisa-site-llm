@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { bancoDeTeste, ID, inserirEmpresa } from './apoio-testes.ts';
 import { estruturaVazia } from './estrutura.ts';
 import { arquivarFuncao, criarFuncao } from './funcoes.ts';
-import { arquivarOcupante, criarOcupante, listarOcupantes, obterOcupante, salvarOcupante, validarNiveis } from './ocupantes.ts';
+import { arquivarOcupante, criarOcupante, listarOcupantes, niveisDosOutros, obterOcupante, salvarOcupante, validarNiveis } from './ocupantes.ts';
 
 function cenario() {
   const db = bancoDeTeste();
@@ -61,4 +61,14 @@ test('lista ocupantes ativos com níveis preenchidos das competências atuais', 
   assert.deepEqual(lista.map(o => [o.id, o.apelido, o.niveisPreenchidos, o.trilhas]), [[id, 'A1', 0, 0]]);
   arquivarFuncao(db, a, funcaoId);
   assert.throws(() => obterOcupante(db, a, id), { status: 404 });
+});
+
+test('lista os níveis dos outros ocupantes ativos da mesma função', () => {
+  const { db, a, b, funcaoId } = cenario();
+  const atual = criarOcupante(db, a, funcaoId, { apelido: 'Atual' });
+  const outro = criarOcupante(db, a, funcaoId, { apelido: 'Outro', niveis: { [ID(1)]: { nivel: 'N2', respostas: [true, true, false] } } });
+  const arquivado = criarOcupante(db, a, funcaoId, { apelido: 'Arquivado' });
+  arquivarOcupante(db, a, arquivado);
+  assert.deepEqual(niveisDosOutros(db, a, funcaoId, atual), [{ id: outro, apelido: 'Outro', niveis: { [ID(1)]: { nivel: 'N2', respostas: [true, true, false] } } }]);
+  assert.throws(() => niveisDosOutros(db, b, funcaoId, atual), { status: 404 });
 });

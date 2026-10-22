@@ -5,9 +5,10 @@ import { chamarApi } from '@/components/api';
 import { Campo, Selecao } from '@/components/Campo';
 import { useAutosave } from '@/components/useAutosave';
 import { useTempoAtivo } from '@/components/useTempoAtivo';
-import { NIVEIS, ROTULOS_NIVEL, pendenciasEstrutura, type Estrutura, type Nivel, type Niveis } from '@/lib/estrutura';
+import { ROTULOS_NIVEL, pendenciasEstrutura, type Estrutura, type NivelOcupante, type Niveis } from '@/lib/estrutura';
 import { calcularLacunas } from '@/lib/lacunas';
 import type { AcaoCatalogo } from '@/lib/seed';
+import PerguntasNivel from './PerguntasNivel';
 import ResultadoTrilha, { type ResultadoAnalise } from './ResultadoTrilha';
 
 type Execucao = { id: string; tipo: 'trilha' | 'diagnostico'; status: 'aguardando' | 'executando' | 'concluida' | 'erro'; criadaEm: string; error?: string; posicao: number | null; result: ResultadoAnalise | null };
@@ -18,9 +19,10 @@ type Props = {
   execucaoInicial: string | null;
   historico: Historico[];
   catalogo: AcaoCatalogo[];
+  outros: { id: string; apelido: string; niveis: Niveis }[];
 };
 
-export default function PaginaOcupante({ funcao, ocupante, historico: historicoInicial, catalogo, execucaoInicial }: Props) {
+export default function PaginaOcupante({ funcao, ocupante, historico: historicoInicial, catalogo, execucaoInicial, outros }: Props) {
   const router = useRouter();
   const [apelido, setApelido] = useState(ocupante.apelido);
   const [niveis, setNiveis] = useState<Niveis>(ocupante.niveis);
@@ -113,9 +115,24 @@ export default function PaginaOcupante({ funcao, ocupante, historico: historicoI
       setErro(e instanceof Error ? e.message : 'Análise indisponível.');
     }
   };
-  const mudarNivel = (competenciaId: string, nivel: string) => {
+  const mudarNivel = (competenciaId: string, valor: NivelOcupante | null) => {
     setExecucao(null);
-    setNiveis(n => ({ ...n, [competenciaId]: { nivel: nivel as Nivel, respostas: null } }));
+    setNiveis(n => {
+      const novo = { ...n };
+      if (valor) novo[competenciaId] = valor;
+      else delete novo[competenciaId];
+      return novo;
+    });
+  };
+  const copiarNiveis = (outroId: string) => {
+    const origem = outros.find(o => o.id === outroId);
+    if (!origem) return;
+    setExecucao(null);
+    setNiveis(n => {
+      const novo = { ...n };
+      for (const c of estrutura.competencias) if (origem.niveis[c.id]) novo[c.id] = origem.niveis[c.id];
+      return novo;
+    });
   };
   const voltar = async () => {
     try {
@@ -149,6 +166,12 @@ export default function PaginaOcupante({ funcao, ocupante, historico: historicoI
         <Campo rotulo="Apelido"><input value={apelido} maxLength={60} disabled={ocupado} onChange={e => setApelido(e.target.value)} /></Campo>
         <div className="role-caption">Use um apelido.<br />Não registre dados pessoais.</div>
       </div>
+      {outros.length > 0 && (
+        <div className="role-strip">
+          <Campo rotulo="Copiar níveis de outro ocupante"><Selecao valor="" vazio="Escolha um ocupante" opcoes={outros.map(o => ({ valor: o.id, rotulo: o.apelido }))} aoMudar={copiarNiveis} /></Campo>
+          <div className="role-caption">Útil quando as pessoas estão no mesmo estágio.<br />Depois ajuste o que for diferente.</div>
+        </div>
+      )}
       <fieldset className="editor" disabled={ocupado}>
         <div className="section-title"><h2>Nível atual <span>{estrutura.competencias.length}</span></h2></div>
         {estrutura.competencias.map((c, i) => {
@@ -158,7 +181,7 @@ export default function PaginaOcupante({ funcao, ocupante, historico: historicoI
               <div className="entry-number">{String(i + 1).padStart(2, '0')}</div>
               <div className="entry-fields">
                 <div className="wide"><strong>{c.competencia.trim() || 'Competência sem nome'}</strong><p className="helper">{c.eixo} · Tarefa: {tarefa?.tarefa || 'não associada'} · A função exige: {ROTULOS_NIVEL[c.alvo]}</p></div>
-                <Campo rotulo="Nível atual"><Selecao valor={niveis[c.id]?.nivel ?? ''} vazio="Escolha o nível" opcoes={NIVEIS.map(n => ({ valor: n, rotulo: ROTULOS_NIVEL[n] }))} aoMudar={v => mudarNivel(c.id, v)} /></Campo>
+                <div className="wide"><PerguntasNivel key={`${c.id}-${niveis[c.id]?.nivel ?? ''}-${String(niveis[c.id]?.respostas)}`} competencia={c} valor={niveis[c.id]} aoMudar={v => mudarNivel(c.id, v)} desabilitado={ocupado} /></div>
               </div>
             </article>
           );
