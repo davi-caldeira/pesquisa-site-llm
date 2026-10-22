@@ -14,11 +14,14 @@ export default async function Pagina({ params }: { params: Promise<{ id: string;
   const funcao = ou404(() => obterFuncao(banco, gestor.empresaId, id));
   const ocupante = ou404(() => obterOcupante(banco, gestor.empresaId, oid));
   if (ocupante.funcaoId !== funcao.id) notFound();
+  const historico = listarExecucoes(banco, ocupante.id);
   return (
     <PaginaOcupante
+      key={ocupante.atualizadoEm}
       funcao={{ id: funcao.id, nome: funcao.nome, estrutura: funcao.estrutura }}
-      ocupante={{ id: ocupante.id, apelido: ocupante.apelido, niveis: ocupante.niveis, prazoDias: ocupante.prazoDias }}
-      historico={listarExecucoes(banco, ocupante.id)}
+      ocupante={{ id: ocupante.id, apelido: ocupante.apelido, niveis: ocupante.niveis, prazoDias: ocupante.prazoDias, atualizadoEm: ocupante.atualizadoEm }}
+      historico={historico}
+      execucaoInicial={historico[0]?.id ?? null}
       catalogo={listarCatalogoAtivo(banco, gestor.empresaId)}
     />
   );

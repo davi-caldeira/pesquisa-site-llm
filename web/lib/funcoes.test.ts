@@ -19,6 +19,19 @@ test('cria, obtém e salva função dentro da própria empresa', () => {
   assert.throws(() => salvarFuncao(db, b, id, { nome: 'Invasão', estrutura: e }), { status: 404 });
 });
 
+test('recusa gravar por cima de uma versão mais nova (voltar do navegador, outra aba)', () => {
+  const db = bancoDeTeste();
+  const a = inserirEmpresa(db);
+  const agora = Date.UTC(2026, 9, 22, 12);
+  const id = criarFuncao(db, a, { nome: 'Caixa', estrutura: estruturaVazia(), origem: 'branco' }, agora);
+  const aberta = obterFuncao(db, a, id).atualizadaEm;
+  const nova = salvarFuncao(db, a, id, { nome: 'Caixa 1', estrutura: estruturaVazia(), versao: aberta }, agora);
+  assert.notEqual(nova, aberta);
+  assert.throws(() => salvarFuncao(db, a, id, { nome: 'Caixa antiga', estrutura: estruturaVazia(), versao: aberta }, agora), { status: 409 });
+  assert.equal(obterFuncao(db, a, id).nome, 'Caixa 1');
+  assert.ok(salvarFuncao(db, a, id, { nome: 'Caixa 2', estrutura: estruturaVazia(), versao: nova }, agora));
+});
+
 test('rejeita nome vazio e estrutura inválida sem alterar a função', () => {
   const db = bancoDeTeste();
   const a = inserirEmpresa(db);

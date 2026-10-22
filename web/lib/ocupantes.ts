@@ -1,6 +1,6 @@
 import type { DatabaseSync } from 'node:sqlite';
 import { NIVEIS, type Nivel, type Niveis } from './estrutura.ts';
-import { obterFuncao } from './funcoes.ts';
+import { obterFuncao, proximaVersao } from './funcoes.ts';
 import { HttpErro } from './http.ts';
 
 export type Ocupante = { id: string; funcaoId: string; empresaId: string; apelido: string; niveis: Niveis; prazoDias: number; criadoEm: string; atualizadoEm: string };
@@ -56,13 +56,15 @@ export function obterOcupante(db: DatabaseSync, empresaId: string | null, id: st
   };
 }
 
-export function salvarOcupante(db: DatabaseSync, empresaId: string, id: string, dados: { apelido: unknown; niveis: unknown; prazoDias: unknown }, agora = Date.now()): void {
-  obterOcupante(db, empresaId, id);
+export function salvarOcupante(db: DatabaseSync, empresaId: string, id: string, dados: { apelido: unknown; niveis: unknown; prazoDias: unknown; versao?: unknown }, agora = Date.now()): string {
+  const atual = obterOcupante(db, empresaId, id);
   const apelido = validarApelido(dados.apelido);
   const niveis = validarNiveis(dados.niveis);
   const prazo = validarPrazo(dados.prazoDias);
+  const versao = proximaVersao(atual.atualizadoEm, dados.versao, agora);
   db.prepare('UPDATE ocupantes SET apelido = ?, niveis = ?, prazo_dias = ?, atualizado_em = ? WHERE id = ?')
-    .run(apelido, JSON.stringify(niveis), prazo, new Date(agora).toISOString(), id);
+    .run(apelido, JSON.stringify(niveis), prazo, versao, id);
+  return versao;
 }
 
 export function arquivarOcupante(db: DatabaseSync, empresaId: string, id: string): void {

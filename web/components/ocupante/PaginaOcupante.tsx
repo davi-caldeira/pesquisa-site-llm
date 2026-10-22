@@ -14,12 +14,13 @@ type Execucao = { id: string; tipo: 'trilha' | 'diagnostico'; status: 'aguardand
 type Historico = { id: string; tipo: string; criadaEm: string };
 type Props = {
   funcao: { id: string; nome: string; estrutura: Estrutura };
-  ocupante: { id: string; apelido: string; niveis: Niveis; prazoDias: number };
+  ocupante: { id: string; apelido: string; niveis: Niveis; prazoDias: number; atualizadoEm: string };
+  execucaoInicial: string | null;
   historico: Historico[];
   catalogo: AcaoCatalogo[];
 };
 
-export default function PaginaOcupante({ funcao, ocupante, historico: historicoInicial, catalogo }: Props) {
+export default function PaginaOcupante({ funcao, ocupante, historico: historicoInicial, catalogo, execucaoInicial }: Props) {
   const router = useRouter();
   const [apelido, setApelido] = useState(ocupante.apelido);
   const [niveis, setNiveis] = useState<Niveis>(ocupante.niveis);
@@ -31,7 +32,7 @@ export default function PaginaOcupante({ funcao, ocupante, historico: historicoI
   const [pronto, setPronto] = useState(false);
   const [catalogoAberto, setCatalogoAberto] = useState(false);
   const [segundos, setSegundos] = useState(0);
-  const { estado, erro: erroSalvar, salvarAgora } = useAutosave(`/api/ocupantes/${ocupante.id}`, { apelido, niveis, prazoDias });
+  const { estado, erro: erroSalvar, salvarAgora } = useAutosave(`/api/ocupantes/${ocupante.id}`, { apelido, niveis, prazoDias }, ocupante.atualizadoEm);
   useTempoAtivo('ocupante', ocupante.id);
   const emAndamento = execucao?.status === 'aguardando' || execucao?.status === 'executando';
   const ocupado = iniciando || emAndamento;
@@ -45,6 +46,22 @@ export default function PaginaOcupante({ funcao, ocupante, historico: historicoI
   useEffect(() => {
     chamarApi<{ modelReady?: boolean }>('/api/health').then(d => setPronto(Boolean(d.modelReady))).catch(() => setPronto(false));
   }, []);
+  // Voltar pelo navegador reaproveita dados antigos: pede ao servidor a versão atual (a key remonta se mudou).
+  useEffect(() => { router.refresh(); }, [router]);
+  useEffect(() => { setHistorico(historicoInicial); }, [historicoInicial]);
+  // Ao abrir ou recarregar, mostra a última geração (e continua acompanhando se ainda estiver na fila).
+  useEffect(() => {
+    if (!execucaoInicial) return;
+    let cancelado = false;
+    chamarApi<Execucao>(`/api/execucoes/${execucaoInicial}`)
+      .then(dados => {
+        if (cancelado) return;
+        setExecucao(dados);
+        if (dados.status === 'erro') setErro(dados.error ?? 'A geração falhou.');
+      })
+      .catch(() => undefined);
+    return () => { cancelado = true; };
+  }, [execucaoInicial]);
 
   const idEmAndamento = emAndamento ? execucao?.id : undefined;
   useEffect(() => {

@@ -1,5 +1,5 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { chamarApi } from '@/components/api';
 import { Campo } from '@/components/Campo';
@@ -19,7 +19,7 @@ const ETAPAS = [
   { nome: 'Ocupantes', detalhe: 'Níveis e trilhas', titulo: 'Avalie cada pessoa.', texto: 'Para cada ocupante, registre o nível atual e gere a trilha de desenvolvimento.', tag: 'M3 + M4 · Trilha' },
 ];
 
-type Props = { funcao: { id: string; nome: string; estrutura: Estrutura }; ocupantes: ResumoOcupante[]; etapaInicial?: number };
+type Props = { funcao: { id: string; nome: string; estrutura: Estrutura; atualizadaEm: string }; ocupantes: ResumoOcupante[]; etapaInicial?: number };
 
 export default function EditorFuncao({ funcao, ocupantes, etapaInicial = 0 }: Props) {
   const router = useRouter();
@@ -27,7 +27,10 @@ export default function EditorFuncao({ funcao, ocupantes, etapaInicial = 0 }: Pr
   const [estrutura, setEstrutura] = useState(funcao.estrutura);
   const [etapa, setEtapa] = useState(etapaInicial);
   const [erroAcao, setErroAcao] = useState('');
-  const { estado, erro, salvarAgora } = useAutosave(`/api/funcoes/${funcao.id}`, { nome, estrutura });
+  const { estado, erro, salvarAgora } = useAutosave(`/api/funcoes/${funcao.id}`, { nome, estrutura }, funcao.atualizadaEm);
+  // Voltar pelo navegador reaproveita dados antigos da página: pede a versão atual ao servidor.
+  // Se ela mudou, a página do servidor troca a key e o editor remonta com os dados novos.
+  useEffect(() => { router.refresh(); }, [router]);
   useTempoAtivo('funcao', funcao.id);
   const pendTarefas = useMemo(() => pendenciasTarefas(estrutura), [estrutura]);
   const pendCompetencias = useMemo(() => pendenciasCompetencias(estrutura), [estrutura]);

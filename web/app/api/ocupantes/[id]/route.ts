@@ -21,8 +21,8 @@ export async function PUT(request: Request, contexto: Contexto) {
     sameOrigin(request);
     const gestor = await exigirGestor();
     const corpo = await lerJson(request, 20_000);
-    salvarOcupante(db(), gestor.empresaId, (await contexto.params).id, { apelido: corpo.apelido, niveis: corpo.niveis, prazoDias: corpo.prazoDias });
-    return Response.json({ salvo: true });
+    const versao = salvarOcupante(db(), gestor.empresaId, (await contexto.params).id, { apelido: corpo.apelido, niveis: corpo.niveis, prazoDias: corpo.prazoDias, versao: corpo.versao });
+    return Response.json({ salvo: true, versao });
   } catch (e) {
     return errorResponse(e);
   }

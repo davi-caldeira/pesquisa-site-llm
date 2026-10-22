@@ -45,6 +45,15 @@ const fs = require('node:fs');
   fs.mkdirSync('test-results', { recursive: true });
   await page.screenshot({ path: 'test-results/ocupante.png', fullPage: true });
 
+  // Voltar do navegador não pode mostrar (nem regravar) a versão antiga da função.
+  await page.goBack();
+  await expect(page.getByLabel('Tarefa', { exact: true })).toHaveValue('Montar orçamento para o cliente', { timeout: 15000 });
+  await page.goForward();
+  await expect(page.getByRole('heading', { name: 'Atendente 1' })).toBeVisible();
+  // Recarregar a página do ocupante mostra a última geração.
+  await page.reload();
+  await expect(page.getByRole('link', { name: 'Baixar planilha' })).toBeVisible({ timeout: 30000 });
+
   await page.goto('/');
   await expect(page.getByRole('link', { name: new RegExp(nome) })).toBeVisible();
   await page.getByRole('button', { name: 'Sair' }).click();

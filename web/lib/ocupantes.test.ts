@@ -33,6 +33,17 @@ test('salva níveis, apelido e prazo validados', () => {
   assert.throws(() => salvarOcupante(db, a, id, { apelido: '', niveis: {}, prazoDias: 14 }), { status: 400 });
 });
 
+test('recusa gravar níveis por cima de uma versão mais nova', () => {
+  const { db, a, funcaoId } = cenario();
+  const agora = Date.UTC(2026, 9, 22, 12);
+  const id = criarOcupante(db, a, funcaoId, { apelido: 'A1' }, agora);
+  const aberta = obterOcupante(db, a, id).atualizadoEm;
+  const nova = salvarOcupante(db, a, id, { apelido: 'A1', niveis: { [ID(1)]: { nivel: 'N2', respostas: null } }, prazoDias: 14, versao: aberta }, agora);
+  assert.notEqual(nova, aberta);
+  assert.throws(() => salvarOcupante(db, a, id, { apelido: 'A1', niveis: {}, prazoDias: 14, versao: aberta }, agora), { status: 409 });
+  assert.equal(obterOcupante(db, a, id).niveis[ID(1)].nivel, 'N2');
+});
+
 test('rejeita níveis malformados', () => {
   assert.throws(() => validarNiveis({ [ID(1)]: { nivel: 'N4', respostas: null } }), { status: 400 });
   assert.throws(() => validarNiveis({ 'nao-uuid': { nivel: 'N1', respostas: null } }), { status: 400 });

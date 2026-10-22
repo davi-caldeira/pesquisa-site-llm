@@ -36,11 +36,21 @@ export function obterFuncao(db: DatabaseSync, empresaId: string | null, id: stri
   return { id: l.id, empresaId: l.empresa_id, nome: l.nome, estrutura: JSON.parse(l.estrutura) as Estrutura, origem: l.origem, criadaEm: l.criada_em, atualizadaEm: l.atualizada_em };
 }
 
-export function salvarFuncao(db: DatabaseSync, empresaId: string, id: string, dados: { nome: unknown; estrutura: unknown }, agora = Date.now()): void {
-  obterFuncao(db, empresaId, id);
+export const MENSAGEM_VERSAO = 'Esta página está desatualizada: houve um salvamento depois que você a abriu (por exemplo, ao voltar pelo navegador ou em outra aba). Recarregue a página para continuar.';
+
+/** Confere a versão que o cliente abriu (data do último salvamento) e devolve a próxima, sempre diferente. */
+export function proximaVersao(atual: string, versao: unknown, agora: number): string {
+  if (versao !== undefined && versao !== atual) throw new HttpErro(409, MENSAGEM_VERSAO);
+  return new Date(Math.max(agora, Date.parse(atual) + 1)).toISOString();
+}
+
+export function salvarFuncao(db: DatabaseSync, empresaId: string, id: string, dados: { nome: unknown; estrutura: unknown; versao?: unknown }, agora = Date.now()): string {
+  const atual = obterFuncao(db, empresaId, id);
   const nome = validarNomeFuncao(dados.nome);
   const estrutura = estruturaValida(dados.estrutura);
-  db.prepare('UPDATE funcoes SET nome = ?, estrutura = ?, atualizada_em = ? WHERE id = ?').run(nome, JSON.stringify(estrutura), new Date(agora).toISOString(), id);
+  const versao = proximaVersao(atual.atualizadaEm, dados.versao, agora);
+  db.prepare('UPDATE funcoes SET nome = ?, estrutura = ?, atualizada_em = ? WHERE id = ?').run(nome, JSON.stringify(estrutura), versao, id);
+  return versao;
 }
 
 export function arquivarFuncao(db: DatabaseSync, empresaId: string, id: string): void {

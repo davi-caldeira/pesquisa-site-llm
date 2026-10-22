@@ -4,22 +4,34 @@ import { chamarApi } from './api';
 
 export type EstadoSalvamento = 'salvo' | 'pendente' | 'erro';
 
-/** Salva com debounce de 700 ms, em série, e permite forçar o salvamento antes de navegar ou gerar. */
-export function useAutosave(url: string, corpo: unknown) {
+/**
+ * Salva com debounce de 700 ms, em série, e permite forçar o salvamento antes de navegar ou gerar.
+ * `versaoInicial` é a data do último salvamento que a página carregou: o servidor recusa (409) gravar
+ * por cima de uma versão mais nova, por exemplo ao voltar pelo navegador para uma página antiga.
+ */
+export function useAutosave(url: string, corpo: Record<string, unknown>, versaoInicial?: string) {
   const serializado = JSON.stringify(corpo);
   const salvo = useRef(serializado);
   const atual = useRef(serializado);
+  const corpoAtual = useRef(corpo);
+  const versao = useRef(versaoInicial);
   const cadeia = useRef<Promise<void>>(Promise.resolve());
   const falhou = useRef(false);
   const [estado, setEstado] = useState<EstadoSalvamento>('salvo');
   const [erro, setErro] = useState('');
-  useLayoutEffect(() => { atual.current = serializado; }, [serializado]);
+  useLayoutEffect(() => {
+    atual.current = serializado;
+    corpoAtual.current = corpo;
+  }, [serializado, corpo]);
+
+  const comVersao = () => JSON.stringify({ ...corpoAtual.current, versao: versao.current });
 
   const salvarAgora = useCallback((): Promise<void> => {
     const tarefa = cadeia.current.then(async () => {
       const valor = atual.current;
       if (valor === salvo.current) return;
-      await chamarApi(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: valor });
+      const resposta = await chamarApi<{ versao?: string }>(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: comVersao() });
+      if (typeof resposta.versao === 'string') versao.current = resposta.versao;
       salvo.current = valor;
       falhou.current = false;
       if (atual.current === valor) {
@@ -47,7 +59,7 @@ export function useAutosave(url: string, corpo: unknown) {
     // envia a última versão com keepalive, que sobrevive à troca de página.
     const salvarAoSair = () => {
       if (atual.current === salvo.current) return;
-      void fetch(url, { method: 'PUT', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: atual.current }).catch(() => undefined);
+      void fetch(url, { method: 'PUT', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: comVersao() }).catch(() => undefined);
       salvo.current = atual.current;
     };
     // Só pede confirmação quando o último salvamento falhou: aí o envio ao sair provavelmente falha também.
