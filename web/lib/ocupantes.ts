@@ -91,3 +91,11 @@ export function niveisDosOutros(db: DatabaseSync, empresaId: string, funcaoId: s
     .all(funcaoId, excetoId) as { id: string; apelido: string; niveis: string }[];
   return linhas.map(l => ({ id: l.id, apelido: l.apelido, niveis: JSON.parse(l.niveis) as Niveis }));
 }
+
+export function ocupantesParaSintese(db: DatabaseSync, empresaId: string | null, funcaoId: string): { id: string; apelido: string; niveis: Niveis; arquivado: boolean; ultimaTrilha: string | null }[] {
+  obterFuncao(db, empresaId, funcaoId, true);
+  const linhas = db.prepare(`SELECT o.id, o.apelido, o.niveis, o.arquivado,
+      (SELECT x.id FROM execucoes x WHERE x.ocupante_id = o.id AND x.tipo = 'trilha' ORDER BY x.criada_em DESC LIMIT 1) AS ultima
+    FROM ocupantes o WHERE o.funcao_id = ? ORDER BY o.criado_em`).all(funcaoId) as { id: string; apelido: string; niveis: string; arquivado: number; ultima: string | null }[];
+  return linhas.map(l => ({ id: l.id, apelido: l.apelido, niveis: JSON.parse(l.niveis) as Niveis, arquivado: Number(l.arquivado) === 1, ultimaTrilha: l.ultima }));
+}

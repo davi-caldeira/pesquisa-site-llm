@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import PaginaOcupante from '@/components/ocupante/PaginaOcupante';
+import { avaliacaoPendente } from '@/lib/avaliacoes';
 import { listarCatalogoAtivo } from '@/lib/catalogo';
 import { db } from '@/lib/db';
 import { listarExecucoes } from '@/lib/execucoes';
@@ -24,6 +25,7 @@ export default async function Pagina({ params }: { params: Promise<{ id: string;
       execucaoInicial={historico[0]?.id ?? null}
       catalogo={listarCatalogoAtivo(banco, gestor.empresaId)}
       outros={niveisDosOutros(banco, gestor.empresaId, funcao.id, ocupante.id)}
+      avaliacaoPendente={avaliacaoPendente(banco, funcao.id)}
     />
   );
 }

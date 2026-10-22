@@ -69,7 +69,7 @@ export default function PainelEmpresas({ iniciais }: { iniciais: ResumoEmpresa[]
             <thead><tr><th>Loja</th><th>Gestor</th><th>Último acesso</th><th>Funções</th><th>Ocupantes</th><th>Trilhas</th><th>Situação</th><th></th></tr></thead>
             <tbody>{empresas.map(e => (
               <tr key={e.id}>
-                <td><strong>{e.nome}</strong><br /><span className="helper">{[e.segmento, e.cidade].filter(Boolean).join(' · ')}</span></td>
+                <td><a className="text-button" href={`/admin/empresas/${e.id}`}><strong>{e.nome}</strong></a><br /><span className="helper">{[e.segmento, e.cidade].filter(Boolean).join(' · ')}</span></td>
                 <td>{e.emailGestor ?? '—'}</td>
                 <td>{e.ultimoAcesso ? new Date(e.ultimoAcesso).toLocaleString('pt-BR') : 'Nunca'}</td>
                 <td>{e.funcoes}</td><td>{e.ocupantes}</td><td>{e.trilhas}</td>

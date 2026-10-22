@@ -76,6 +76,7 @@ export default function EditorFuncao({ funcao, ocupantes, etapaInicial = 0, ferr
         ))}</nav>
         <div className="side-note">
           <button className="text-button" onClick={() => void navegar('/')}>← Voltar ao painel</button><br />
+          <button className="text-button" style={{ marginTop: 14 }} onClick={() => void navegar(`/funcoes/${funcao.id}/sintese`)}>Ver síntese da função</button><br />
           <button className="text-button danger" style={{ marginTop: 14 }} onClick={() => void arquivar()}>Arquivar função</button>
         </div>
         <div className="side-footer">MRCC-PV · PBL4<br />Pesquisa aplicada / Pessoas e cultura</div>

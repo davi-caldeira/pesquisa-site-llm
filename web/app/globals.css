@@ -54,3 +54,7 @@
 
 .entry.desmarcada{opacity:.55}
 .entry input[type=checkbox]{width:18px;height:18px;margin-top:6px;flex-shrink:0}
+
+.tabela-larga{min-width:2200px}
+.tabela-larga th{white-space:normal;min-width:110px}
+.sintese h1{margin-top:9px}

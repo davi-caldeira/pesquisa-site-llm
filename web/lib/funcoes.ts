@@ -2,12 +2,12 @@ import type { DatabaseSync } from 'node:sqlite';
 import { pendenciasEstrutura, validarEstrutura, type Estrutura } from './estrutura.ts';
 import { HttpErro } from './http.ts';
 
-export type Funcao = { id: string; empresaId: string; nome: string; estrutura: Estrutura; origem: string; criadaEm: string; atualizadaEm: string };
+export type Funcao = { id: string; empresaId: string; nome: string; estrutura: Estrutura; origem: string; criadaEm: string; atualizadaEm: string; arquivada: boolean };
 export type ResumoFuncao = {
   id: string; nome: string; atualizadaEm: string; tarefas: number; competencias: number;
   salvaguardasRespondidas: number; pendencias: number; ocupantes: number; trilhas: number;
 };
-type Linha = { id: string; empresa_id: string; nome: string; estrutura: string; origem: string; criada_em: string; atualizada_em: string };
+type Linha = { id: string; empresa_id: string; nome: string; estrutura: string; origem: string; criada_em: string; atualizada_em: string; arquivada: number };
 
 export function validarNomeFuncao(v: unknown): string {
   if (typeof v !== 'string' || !v.trim() || v.trim().length > 120) throw new HttpErro(400, 'Informe o nome da função (até 120 caracteres).');
@@ -30,10 +30,10 @@ export function criarFuncao(db: DatabaseSync, empresaId: string, dados: { nome: 
   return id;
 }
 
-export function obterFuncao(db: DatabaseSync, empresaId: string | null, id: string): Funcao {
-  const l = db.prepare('SELECT id, empresa_id, nome, estrutura, origem, criada_em, atualizada_em FROM funcoes WHERE id = ? AND arquivada = 0').get(id) as Linha | undefined;
+export function obterFuncao(db: DatabaseSync, empresaId: string | null, id: string, incluirArquivada = false): Funcao {
+  const l = db.prepare(`SELECT id, empresa_id, nome, estrutura, origem, criada_em, atualizada_em, arquivada FROM funcoes WHERE id = ?${incluirArquivada ? '' : ' AND arquivada = 0'}`).get(id) as Linha | undefined;
   if (!l || (empresaId !== null && l.empresa_id !== empresaId)) throw new HttpErro(404, 'Função não encontrada.');
-  return { id: l.id, empresaId: l.empresa_id, nome: l.nome, estrutura: JSON.parse(l.estrutura) as Estrutura, origem: l.origem, criadaEm: l.criada_em, atualizadaEm: l.atualizada_em };
+  return { id: l.id, empresaId: l.empresa_id, nome: l.nome, estrutura: JSON.parse(l.estrutura) as Estrutura, origem: l.origem, criadaEm: l.criada_em, atualizadaEm: l.atualizada_em, arquivada: Number(l.arquivada) === 1 };
 }
 
 export const MENSAGEM_VERSAO = 'Esta página está desatualizada: houve um salvamento depois que você a abriu (por exemplo, ao voltar pelo navegador ou em outra aba). Recarregue a página para continuar.';

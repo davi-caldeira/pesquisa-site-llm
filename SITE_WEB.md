@@ -18,6 +18,10 @@ O tempo ativo de preenchimento de cada função e de cada ocupante é registrado
 
 O admin mantém os **modelos de cargo** (`/admin/modelos`, inclusive promovendo a função de uma loja a modelo) e o **catálogo da pesquisa** (`/admin/catalogo`). Cada loja pode incluir ações próprias em `/acoes`; o motor recebe as ativas do catálogo e da loja (até 40), sem repetições. O conteúdo dos modelos Operador(a) de caixa, Vendedor(a), Estoquista/Repositor e Atendimento online é proposta da equipe e deve ser revisado pelo grupo.
 
+**Síntese da função (RF12):** em cada função, "Ver síntese da função" mostra numa página o mapa de efeitos, as competências, a salvaguarda e as lacunas de cada ocupante, com o PDF da última trilha.
+
+**Pesquisa (admin):** `/admin/metricas` traz, por função, tempo ativo de preenchimento (meta de 90 min do RNF01), cobertura do diagnóstico, densidade de lacunas, completude da trilha, diretriz de uso crítico, alerta de preservação, facilidade percebida (nota de 1 a 5 pedida ao gestor depois da primeira trilha) e o efeito dos recursos de agilidade (origem das tarefas e competências e quanto foi editado). "Baixar CSV" abre direto no Excel. Em `/admin`, o nome da loja leva à leitura das funções dela, inclusive arquivadas.
+
 As análises anônimas feitas antes do login continuam no banco e nas pastas de `web/data/`, mas não aparecem mais no site.
 
 O layout usa blocos por ação, quadro de responsável/prazo/custo, critério de conclusão em destaque e tabela de salvaguardas. O cache interno é versionado (`relatorio-v2.pdf`), enquanto o download mantém o nome `relatorio.pdf`; assim, relatórios já baixados no layout anterior recebem a apresentação nova no próximo download.

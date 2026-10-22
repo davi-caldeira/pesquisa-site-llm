@@ -8,6 +8,7 @@ import { useTempoAtivo } from '@/components/useTempoAtivo';
 import { ROTULOS_NIVEL, pendenciasEstrutura, type Estrutura, type NivelOcupante, type Niveis } from '@/lib/estrutura';
 import { calcularLacunas } from '@/lib/lacunas';
 import type { AcaoCatalogo } from '@/lib/seed';
+import AvaliacaoUso from './AvaliacaoUso';
 import PerguntasNivel from './PerguntasNivel';
 import ResultadoTrilha, { type ResultadoAnalise } from './ResultadoTrilha';
 
@@ -20,9 +21,10 @@ type Props = {
   historico: Historico[];
   catalogo: AcaoCatalogo[];
   outros: { id: string; apelido: string; niveis: Niveis }[];
+  avaliacaoPendente: boolean;
 };
 
-export default function PaginaOcupante({ funcao, ocupante, historico: historicoInicial, catalogo, execucaoInicial, outros }: Props) {
+export default function PaginaOcupante({ funcao, ocupante, historico: historicoInicial, catalogo, execucaoInicial, outros, avaliacaoPendente }: Props) {
   const router = useRouter();
   const [apelido, setApelido] = useState(ocupante.apelido);
   const [niveis, setNiveis] = useState<Niveis>(ocupante.niveis);
@@ -221,6 +223,7 @@ export default function PaginaOcupante({ funcao, ocupante, historico: historicoI
           <button className="text-button" disabled={pendencias.length > 0} onClick={() => void gerar('diagnostico')}>Conferir diagnóstico sem gerar a trilha</button></div>
       )}
       {resultado && execucao && <ResultadoTrilha resultado={resultado} execucaoId={execucao.id} />}
+      {resultado && execucao?.tipo === 'trilha' && avaliacaoPendente && <AvaliacaoUso funcaoId={funcao.id} />}
       <div className="catalog">
         <button className="catalog-toggle" onClick={() => setCatalogoAberto(!catalogoAberto)} aria-expanded={catalogoAberto}><span>Catálogo de ações disponíveis <b>{catalogo.length}</b></span><span>{catalogoAberto ? '−' : '+'}</span></button>
         {catalogoAberto && <div className="catalog-items">{catalogo.map(a => <div key={`${a.eixo}|${a.acao}`}><span className="eyebrow">{a.eixo}</span><p>{a.acao}</p><small>{a.recurso} · {a.custo}</small></div>)}</div>}

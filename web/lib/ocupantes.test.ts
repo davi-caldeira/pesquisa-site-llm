@@ -2,8 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { bancoDeTeste, ID, inserirEmpresa } from './apoio-testes.ts';
 import { estruturaVazia } from './estrutura.ts';
-import { arquivarFuncao, criarFuncao } from './funcoes.ts';
-import { arquivarOcupante, criarOcupante, listarOcupantes, niveisDosOutros, obterOcupante, salvarOcupante, validarNiveis } from './ocupantes.ts';
+import { arquivarFuncao, criarFuncao, obterFuncao } from './funcoes.ts';
+import { arquivarOcupante, criarOcupante, listarOcupantes, niveisDosOutros, ocupantesParaSintese, obterOcupante, salvarOcupante, validarNiveis } from './ocupantes.ts';
 
 function cenario() {
   const db = bancoDeTeste();
@@ -71,4 +71,15 @@ test('lista os níveis dos outros ocupantes ativos da mesma função', () => {
   arquivarOcupante(db, a, arquivado);
   assert.deepEqual(niveisDosOutros(db, a, funcaoId, atual), [{ id: outro, apelido: 'Outro', niveis: { [ID(1)]: { nivel: 'N2', respostas: [true, true, false] } } }]);
   assert.throws(() => niveisDosOutros(db, b, funcaoId, atual), { status: 404 });
+});
+
+test('síntese lista todos os ocupantes, com a última trilha, e abre função arquivada só quando pedido', () => {
+  const { db, a, funcaoId } = cenario();
+  const ativo = criarOcupante(db, a, funcaoId, { apelido: 'Ativo' });
+  const velho = criarOcupante(db, a, funcaoId, { apelido: 'Velho' });
+  arquivarOcupante(db, a, velho);
+  arquivarFuncao(db, a, funcaoId);
+  assert.throws(() => obterFuncao(db, a, funcaoId), { status: 404 });
+  assert.equal(obterFuncao(db, a, funcaoId, true).arquivada, true);
+  assert.deepEqual(ocupantesParaSintese(db, a, funcaoId).map(o => [o.id, o.arquivado, o.ultimaTrilha]), [[ativo, false, null], [velho, true, null]]);
 });
