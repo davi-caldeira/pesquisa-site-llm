@@ -51,3 +51,10 @@ test('CSV abre no Excel pt-BR e protege separadores', () => {
   assert.ok(linha.includes(';4,5;2;'));
   assert.equal(paraCsv([]).slice(1).split('\r\n').length, 2);
 });
+
+test('CSV neutraliza fórmulas vindas de nomes digitados', () => {
+  const csv = paraCsv([calcularMetrica(dados({ funcao: '=1+1', empresa: '@SUM(A1)' }))]);
+  const linha = csv.slice(1).split('\r\n')[1];
+  assert.ok(linha.startsWith("'@SUM(A1);'=1+1;"));
+  assert.ok(paraCsv([calcularMetrica(dados({ funcao: '-x' }))]).includes(";'-x;"));
+});

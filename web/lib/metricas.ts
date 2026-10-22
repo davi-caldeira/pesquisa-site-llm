@@ -61,7 +61,8 @@ export function calcularMetrica(d: DadosMetrica): LinhaMetrica {
 
 function celula(v: string | number | null): string {
   if (v === null) return '';
-  const texto = typeof v === 'number' ? String(v).replace('.', ',') : v;
+  // Texto digitado começando com = + - @ viraria fórmula no Excel: o apóstrofo força texto.
+  const texto = typeof v === 'number' ? String(v).replace('.', ',') : /^\s*[=+\-@＝＋－＠]/.test(v) ? `'${v}` : v;
   return /[;"\r\n]/.test(texto) ? `"${texto.replace(/"/g, '""')}"` : texto;
 }
 

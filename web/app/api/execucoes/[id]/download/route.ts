@@ -21,7 +21,9 @@ export async function GET(request: Request, contexto: { params: Promise<{ id: st
     const usuario = await exigirUsuario();
     const { id } = await contexto.params;
     const arquivo = ARQUIVOS[new URL(request.url).searchParams.get('type') || 'excel'];
-    if (!arquivo || (await lerExecucao(db(), usuario, id)).status !== 'concluida') throw new HttpErro(404, 'Arquivo indisponível.');
+    const execucao = await lerExecucao(db(), usuario, id);
+    // Extrações não têm planilha nem relatório: sem esta checagem, cada pedido de PDF abriria um processo Python.
+    if (!arquivo || execucao.status !== 'concluida' || execucao.tipo === 'extracao') throw new HttpErro(404, 'Arquivo indisponível.');
     if (arquivo === ARQUIVOS.report) {
       try {
         await stat(path.join(jobPath(id), arquivo[0]));
