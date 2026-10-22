@@ -36,6 +36,7 @@ export default function PaginaOcupante({ funcao, ocupante, historico: historicoI
   const [pronto, setPronto] = useState(false);
   const [catalogoAberto, setCatalogoAberto] = useState(false);
   const [segundos, setSegundos] = useState(0);
+  const [copias, setCopias] = useState(0);
   const { estado, erro: erroSalvar, salvarAgora } = useAutosave(`/api/ocupantes/${ocupante.id}`, { apelido, niveis, prazoDias }, ocupante.atualizadoEm);
   useTempoAtivo('ocupante', ocupante.id);
   const emAndamento = execucao?.status === 'aguardando' || execucao?.status === 'executando';
@@ -129,6 +130,8 @@ export default function PaginaOcupante({ funcao, ocupante, historico: historicoI
   const copiarNiveis = (outroId: string) => {
     const origem = outros.find(o => o.id === outroId);
     if (!origem) return;
+    // Remonta as perguntas só quando os níveis vêm de fora; respostas parciais sobrevivem às correções.
+    setCopias(n => n + 1);
     setExecucao(null);
     setNiveis(n => {
       const novo = { ...n };
@@ -183,7 +186,7 @@ export default function PaginaOcupante({ funcao, ocupante, historico: historicoI
               <div className="entry-number">{String(i + 1).padStart(2, '0')}</div>
               <div className="entry-fields">
                 <div className="wide"><strong>{c.competencia.trim() || 'Competência sem nome'}</strong><p className="helper">{c.eixo} · Tarefa: {tarefa?.tarefa || 'não associada'} · A função exige: {ROTULOS_NIVEL[c.alvo]}</p></div>
-                <div className="wide"><PerguntasNivel key={`${c.id}-${niveis[c.id]?.nivel ?? ''}-${String(niveis[c.id]?.respostas)}`} competencia={c} valor={niveis[c.id]} aoMudar={v => mudarNivel(c.id, v)} desabilitado={ocupado} /></div>
+                <div className="wide"><PerguntasNivel key={`${c.id}-${copias}`} competencia={c} valor={niveis[c.id]} aoMudar={v => mudarNivel(c.id, v)} desabilitado={ocupado} /></div>
               </div>
             </article>
           );

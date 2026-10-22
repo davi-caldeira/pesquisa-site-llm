@@ -26,7 +26,7 @@ const fs = require('node:fs');
 
   await page.getByRole('link', { name: '+ Nova função' }).click();
   const nome = `Validação web ${Date.now()}`;
-  await page.getByLabel('Nome da função').fill(nome);
+  await page.locator('form', { hasText: 'Em branco' }).getByLabel('Nome da função').fill(nome);
   await page.getByRole('button', { name: 'Começar em branco' }).click();
   await expect(page.getByRole('heading', { name: 'Entenda o trabalho.' })).toBeVisible();
   await page.getByLabel('Tarefa', { exact: true }).fill('Montar orçamento para o cliente');
@@ -42,6 +42,11 @@ const fs = require('node:fs');
   await page.getByRole('radiogroup', { name: 'Usa a ferramenta nesta tarefa?' }).getByRole('radio', { name: 'Sim' }).click();
   await page.getByRole('radiogroup', { name: /Usa sem instruções prontas/ }).getByRole('radio', { name: 'Não' }).click();
   await expect(page.getByText('N1 - Usuário assistido —')).toBeVisible();
+  // Corrigir uma resposta mantém as anteriores e mostra a pergunta seguinte.
+  await page.getByRole('radiogroup', { name: /Usa sem instruções prontas/ }).getByRole('radio', { name: 'Sim' }).click();
+  await expect(page.getByRole('radiogroup', { name: 'Usa a ferramenta nesta tarefa?' }).getByRole('radio', { name: 'Sim' })).toHaveAttribute('aria-checked', 'true');
+  await page.getByRole('radiogroup', { name: /Percebe erros da ferramenta/ }).getByRole('radio', { name: 'Não' }).click();
+  await expect(page.getByText('N2 - Usuário autônomo —')).toBeVisible();
   await page.getByRole('button', { name: 'Conferir diagnóstico sem gerar a trilha' }).click();
   await expect(page.getByRole('link', { name: 'Baixar planilha' })).toBeVisible({ timeout: 60000 });
   fs.mkdirSync('test-results', { recursive: true });
