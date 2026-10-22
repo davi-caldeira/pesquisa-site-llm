@@ -110,8 +110,9 @@ def processar(entrada, pasta, modo):
     dados["usar_trilha_contexto"] = False
     dados["prompt_compacto"] = True
     dados['parametros_gestor'] = {'prazo_dias_proposto': entrada.get('prazo_dias_proposto', 14)}
-    if len(json.dumps(r.mensagens(dados), ensure_ascii=False)) > 28000:
-        raise ValueError("O formulário está extenso demais. Reduza o número de competências ou o tamanho das descrições.")
+    # Mede o que a web realmente envia à LLM (o seletor curto de web_llm), não o prompt completo da CLI.
+    if len(json.dumps(web_llm.mensagens(dados), ensure_ascii=False)) > 28000:
+        raise ValueError("O formulário está extenso demais. Reduza o número de competências, o tamanho das descrições ou as ações próprias da loja.")
     meta = {"versao": r.VERSAO, "modo": modo, "origem": "formulario_web",
             "gerado_em_utc": datetime.now(timezone.utc).isoformat(), "modelo": r.MODELO if modo == "llm" else None,
             "versao_prompt": web_llm.VERSAO, "trilha_manual_enviada_a_llm": False,
