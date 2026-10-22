@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { bancoDeTeste, exemploAtendente, inserirEmpresa } from './apoio-testes.ts';
 import { validarEstrutura } from './estrutura.ts';
+import { sugerir } from './regras.ts';
 import { criarFuncao } from './funcoes.ts';
 import { criarModelo, definirModeloAtivo, listarModelos, obterModelo, promoverFuncao, salvarModelo, semearModelos } from './modelos.ts';
 
@@ -52,4 +53,12 @@ test('promove função a modelo sem salvaguardas nem dados da empresa', () => {
   assert.ok(m.estrutura.salvaguardas.every(s => s.resposta === 'Não sei' && !s.observacao && !s.ajuste));
   assert.notEqual(m.estrutura.tarefas[0].id, estrutura.tarefas[0].id);
   assert.throws(() => promoverFuncao(db, crypto.randomUUID()), { status: 404 });
+});
+
+test('modelos semeados não nascem sugerindo competência repetida (R1, R2, R3)', () => {
+  const db = bancoDeTeste();
+  for (const m of listarModelos(db, false)) {
+    const repetidas = sugerir(obterModelo(db, m.id, true).estrutura).competencias.filter(s => !s.chave.startsWith('R4:'));
+    assert.deepEqual(repetidas.map(s => `${m.nome}: ${s.competencia.competencia}`), []);
+  }
 });

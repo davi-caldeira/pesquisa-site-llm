@@ -52,7 +52,7 @@ export const MODELOS_BASE: ModeloBase[] = [
     ],
     competencias: [
       ['Letramento em IA', 'Letramento em IA', 3, 'N2'],
-      ['Proficiência no assistente de conversa', 'Proficiência técnica', 2, 'N2'],
+      ['Proficiência no assistente de conversa', 'Proficiência técnica', 1, 'N2'],
       ['Julgamento na orientação ao cliente', 'Relacionais e de julgamento', 0, 'N3'],
       ['Julgamento na negociação', 'Relacionais e de julgamento', 4, 'N3'],
     ],
