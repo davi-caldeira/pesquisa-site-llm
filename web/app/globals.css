@@ -8,3 +8,20 @@
 .session-history{padding:24px 0}.history-item{display:flex;justify-content:space-between;gap:8px;width:100%;background:none;border:0;border-bottom:1px solid #dce2de;padding:12px 0;color:inherit;text-align:left;cursor:pointer}.history-item small{font-size:11px;color:#6b7971}.session-history .helper{margin-top:14px;font-size:12px;line-height:1.6}
 
 @media(max-width:760px){.side-note{display:flex;gap:18px;flex-wrap:wrap;border:0;margin:14px 0 0;padding:0}.side-note .note-icon,.side-note strong,.side-note p,.side-note br{display:none}.side-note .text-button{margin:0!important;font-size:12px}.session-history{padding:18px 0 0}}
+
+/* Contas e páginas da loja */
+.page{max-width:1180px;margin:auto;padding:38px 34px 60px}
+.page.narrow{max-width:760px}
+.panel{background:white;border:1px solid var(--line);border-radius:9px;padding:24px;margin:0 0 26px;display:flex;flex-direction:column;gap:16px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:26px}
+.card{display:flex;flex-direction:column;gap:8px;align-items:flex-start;background:white;border:1px solid var(--line);border-radius:9px;padding:22px;text-align:left;width:100%;color:inherit;font:inherit;transition:border-color .15s}
+.card:hover{border-color:#9fb3c9}
+.auth-shell{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
+.auth-card{width:min(430px,100%);background:white;border:1px solid var(--line);border-radius:10px;padding:32px;display:flex;flex-direction:column;gap:18px}
+.auth-card .brand{font-size:22px}
+.secret{font:600 18px/1.4 ui-monospace,Consolas,monospace;background:white;border:1px solid #ccdbef;border-radius:5px;padding:3px 9px;letter-spacing:1px}
+.row-actions{display:flex;gap:14px;white-space:nowrap}
+.text-button.danger{color:#a43439}
+@media(min-width:1201px){.shell.sem-resumo{grid-template-columns:235px minmax(0,1fr)}}
+@media(max-width:760px){.page{padding:26px 16px 50px}.form-grid{grid-template-columns:1fr}.auth-card{padding:24px}}
