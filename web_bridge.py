@@ -44,7 +44,7 @@ def validar_entrada(entrada):
     prazo = entrada.get('prazo_dias_proposto', 14)
     if type(prazo) is not int or not 1 <= prazo <= 180:
         raise ValueError('Informe um prazo inicial inteiro entre 1 e 180 dias.')
-    limites = {"tarefas": 12, "competencias": 8, "catalogo": 16, "salvaguardas": 6, "trilha": 12}
+    limites = {"tarefas": 12, "competencias": 8, "catalogo": 40, "salvaguardas": 6, "trilha": 12}
     for nome, (_, campos) in CAMPOS.items():
         linhas = entrada.get(nome, [])
         if not isinstance(linhas, list) or len(linhas) > limites[nome]:

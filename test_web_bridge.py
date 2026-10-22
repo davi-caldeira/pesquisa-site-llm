@@ -16,6 +16,14 @@ class TestBridge(unittest.TestCase):
         warnings.filterwarnings('ignore', message='Data Validation extension is not supported')
         cls.entrada = b.entrada_da_planilha(b.TEMPLATE)
 
+    def test_catalogo_aceita_ate_40_acoes(self):
+        entrada = copy.deepcopy(self.entrada)
+        entrada['catalogo'] = [{'eixo': 'Geral', 'acao': f'Ação {i}', 'recurso': 'Interno', 'custo': 'R$ 0'} for i in range(40)]
+        b.validar_entrada(entrada)
+        entrada['catalogo'].append({'eixo': 'Geral', 'acao': 'Ação 40', 'recurso': 'Interno', 'custo': 'R$ 0'})
+        with self.assertRaisesRegex(ValueError, 'catalogo'):
+            b.validar_entrada(entrada)
+
     def test_roundtrip_e_m3_atualizado(self):
         entrada = copy.deepcopy(self.entrada)
         entrada['competencias'][0]['atual'] = 'N2 - Usuário autônomo'
